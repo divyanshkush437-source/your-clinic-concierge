@@ -64,7 +64,8 @@ function AdminPage() {
     return () => { supabase.removeChannel(ch); };
   }, []);
 
-  async function setStatus(id: string, status: string) {
+  type ApptStatus = "booked" | "arrived" | "in_queue" | "consulting" | "completed" | "cancelled";
+  async function setStatus(id: string, status: ApptStatus) {
     const { error } = await supabase.from("appointments").update({ status }).eq("id", id);
     if (error) toast.error(error.message); else toast.success("Updated");
   }
