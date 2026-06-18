@@ -53,6 +53,36 @@ export type Database = {
         }
         Relationships: []
       }
+      clinic_settings: {
+        Row: {
+          clinic_timing: string
+          consultation_fee: number
+          created_at: string
+          doctor_name: string
+          id: boolean
+          max_patients_per_day: number
+          updated_at: string
+        }
+        Insert: {
+          clinic_timing?: string
+          consultation_fee?: number
+          created_at?: string
+          doctor_name?: string
+          id?: boolean
+          max_patients_per_day?: number
+          updated_at?: string
+        }
+        Update: {
+          clinic_timing?: string
+          consultation_fee?: number
+          created_at?: string
+          doctor_name?: string
+          id?: boolean
+          max_patients_per_day?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
