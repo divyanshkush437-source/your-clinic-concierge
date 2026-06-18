@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.allocate_token(DATE) FROM authenticated;
