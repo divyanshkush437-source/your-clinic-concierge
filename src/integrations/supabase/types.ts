@@ -14,16 +14,203 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      appointments: {
+        Row: {
+          appointment_date: string
+          consultation_fee: number
+          created_at: string
+          estimated_time: string | null
+          id: string
+          notes: string | null
+          patient_id: string
+          status: Database["public"]["Enums"]["appointment_status"]
+          token_number: number | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_date: string
+          consultation_fee?: number
+          created_at?: string
+          estimated_time?: string | null
+          id?: string
+          notes?: string | null
+          patient_id: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          token_number?: number | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string
+          consultation_fee?: number
+          created_at?: string
+          estimated_time?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          token_number?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          appointment_id: string
+          created_at: string
+          currency: string
+          id: string
+          patient_id: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          razorpay_signature: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          appointment_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          patient_id: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          patient_id?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          age: number | null
+          created_at: string
+          full_name: string
+          gender: string | null
+          id: string
+          language: string
+          mobile: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          age?: number | null
+          created_at?: string
+          full_name?: string
+          gender?: string | null
+          id: string
+          language?: string
+          mobile?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          age?: number | null
+          created_at?: string
+          full_name?: string
+          gender?: string | null
+          id?: string
+          language?: string
+          mobile?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      waiting_list: {
+        Row: {
+          appointment_date: string
+          created_at: string
+          id: string
+          notified: boolean
+          patient_id: string
+          position: number
+        }
+        Insert: {
+          appointment_date: string
+          created_at?: string
+          id?: string
+          notified?: boolean
+          patient_id: string
+          position: number
+        }
+        Update: {
+          appointment_date?: string
+          created_at?: string
+          id?: string
+          notified?: boolean
+          patient_id?: string
+          position?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      allocate_token: { Args: { _date: string }; Returns: number }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "patient" | "staff" | "doctor"
+      appointment_status:
+        | "booked"
+        | "arrived"
+        | "in_queue"
+        | "consulting"
+        | "completed"
+        | "cancelled"
+      payment_status: "pending" | "paid" | "failed" | "refunded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +337,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["patient", "staff", "doctor"],
+      appointment_status: [
+        "booked",
+        "arrived",
+        "in_queue",
+        "consulting",
+        "completed",
+        "cancelled",
+      ],
+      payment_status: ["pending", "paid", "failed", "refunded"],
+    },
   },
 } as const
