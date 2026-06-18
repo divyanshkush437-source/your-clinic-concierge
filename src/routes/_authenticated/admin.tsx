@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { CLINIC, APPOINTMENT_STATUS_LABEL } from "@/lib/clinic";
-import { Search, ChevronRight, SkipForward, Check, UserCheck } from "lucide-react";
+import { Search, ChevronRight, SkipForward, Check, UserCheck, Settings as SettingsIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async () => {
