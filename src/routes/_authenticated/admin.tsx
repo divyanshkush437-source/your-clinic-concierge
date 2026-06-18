@@ -125,7 +125,7 @@ function AdminPage() {
   );
 }
 
-function AdminRow({ r, lang, onSet }: { r: Row; lang: "en" | "hi"; onSet: (id: string, s: string) => void }) {
+function AdminRow({ r, lang, onSet }: { r: Row; lang: "en" | "hi"; onSet: (id: string, s: "booked"|"arrived"|"in_queue"|"consulting"|"completed"|"cancelled") => void }) {
   const s = APPOINTMENT_STATUS_LABEL[r.status];
   return (
     <Card className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-3 sm:flex sm:justify-between">
