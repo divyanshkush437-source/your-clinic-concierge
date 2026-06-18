@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { CLINIC, APPOINTMENT_STATUS_LABEL } from "@/lib/clinic";
-import { Search, ChevronRight, SkipForward, Check, UserCheck } from "lucide-react";
+import { Search, ChevronRight, SkipForward, Check, UserCheck, Settings as SettingsIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async () => {
@@ -95,9 +95,14 @@ function AdminPage() {
             <div className="text-xs font-semibold uppercase tracking-widest text-primary">{t("admin")}</div>
             <h1 className="truncate text-3xl font-extrabold">{CLINIC.name}</h1>
           </div>
-          <Button size="lg" onClick={callNext} className="shrink-0 shadow-card">
-            <ChevronRight className="mr-1 h-4 w-4" /> {t("callNext")}
-          </Button>
+          <div className="flex shrink-0 gap-2">
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/settings"><SettingsIcon className="mr-1 h-4 w-4" /> Settings</Link>
+            </Button>
+            <Button size="lg" onClick={callNext} className="shadow-card">
+              <ChevronRight className="mr-1 h-4 w-4" /> {t("callNext")}
+            </Button>
+          </div>
         </div>
 
         <div className="relative mt-6">
