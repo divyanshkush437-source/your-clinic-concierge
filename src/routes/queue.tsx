@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { CLINIC } from "@/lib/clinic";
 import { Activity, Clock, Users } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/queue")({
+export const Route = createFileRoute("/queue")({
   component: QueuePage,
 });
 

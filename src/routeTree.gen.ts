@@ -9,17 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as QueueRouteImport } from './routes/queue'
+import { Route as BookRouteImport } from './routes/book'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConfirmationIdRouteImport } from './routes/confirmation.$id'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedQueueRouteImport } from './routes/_authenticated/queue'
 import { Route as AuthenticatedDoctorRouteImport } from './routes/_authenticated/doctor'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedBookRouteImport } from './routes/_authenticated/book'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as AuthenticatedConfirmationIdRouteImport } from './routes/_authenticated/confirmation.$id'
 
+const QueueRoute = QueueRouteImport.update({
+  id: '/queue',
+  path: '/queue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookRoute = BookRouteImport.update({
+  id: '/book',
+  path: '/book',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -34,14 +43,14 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConfirmationIdRoute = ConfirmationIdRouteImport.update({
+  id: '/confirmation/$id',
+  path: '/confirmation/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedQueueRoute = AuthenticatedQueueRouteImport.update({
-  id: '/queue',
-  path: '/queue',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDoctorRoute = AuthenticatedDoctorRouteImport.update({
@@ -49,84 +58,63 @@ const AuthenticatedDoctorRoute = AuthenticatedDoctorRouteImport.update({
   path: '/doctor',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedBookRoute = AuthenticatedBookRouteImport.update({
-  id: '/book',
-  path: '/book',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedConfirmationIdRoute =
-  AuthenticatedConfirmationIdRouteImport.update({
-    id: '/confirmation/$id',
-    path: '/confirmation/$id',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/book': typeof BookRoute
+  '/queue': typeof QueueRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/book': typeof AuthenticatedBookRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
   '/doctor': typeof AuthenticatedDoctorRoute
-  '/queue': typeof AuthenticatedQueueRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/confirmation/$id': typeof AuthenticatedConfirmationIdRoute
+  '/confirmation/$id': typeof ConfirmationIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/book': typeof BookRoute
+  '/queue': typeof QueueRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/book': typeof AuthenticatedBookRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
   '/doctor': typeof AuthenticatedDoctorRoute
-  '/queue': typeof AuthenticatedQueueRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/confirmation/$id': typeof AuthenticatedConfirmationIdRoute
+  '/confirmation/$id': typeof ConfirmationIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/book': typeof BookRoute
+  '/queue': typeof QueueRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/_authenticated/book': typeof AuthenticatedBookRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/doctor': typeof AuthenticatedDoctorRoute
-  '/_authenticated/queue': typeof AuthenticatedQueueRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/_authenticated/confirmation/$id': typeof AuthenticatedConfirmationIdRoute
+  '/confirmation/$id': typeof ConfirmationIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/admin'
     | '/book'
-    | '/dashboard'
-    | '/doctor'
     | '/queue'
+    | '/admin'
+    | '/doctor'
     | '/settings'
     | '/confirmation/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/admin'
     | '/book'
-    | '/dashboard'
-    | '/doctor'
     | '/queue'
+    | '/admin'
+    | '/doctor'
     | '/settings'
     | '/confirmation/$id'
   id:
@@ -134,23 +122,39 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/book'
+    | '/queue'
     | '/_authenticated/admin'
-    | '/_authenticated/book'
-    | '/_authenticated/dashboard'
     | '/_authenticated/doctor'
-    | '/_authenticated/queue'
     | '/_authenticated/settings'
-    | '/_authenticated/confirmation/$id'
+    | '/confirmation/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  BookRoute: typeof BookRoute
+  QueueRoute: typeof QueueRoute
+  ConfirmationIdRoute: typeof ConfirmationIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/queue': {
+      id: '/queue'
+      path: '/queue'
+      fullPath: '/queue'
+      preLoaderRoute: typeof QueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book': {
+      id: '/book'
+      path: '/book'
+      fullPath: '/book'
+      preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -172,18 +176,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/confirmation/$id': {
+      id: '/confirmation/$id'
+      path: '/confirmation/$id'
+      fullPath: '/confirmation/$id'
+      preLoaderRoute: typeof ConfirmationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/queue': {
-      id: '/_authenticated/queue'
-      path: '/queue'
-      fullPath: '/queue'
-      preLoaderRoute: typeof AuthenticatedQueueRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/doctor': {
@@ -193,20 +197,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDoctorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/book': {
-      id: '/_authenticated/book'
-      path: '/book'
-      fullPath: '/book'
-      preLoaderRoute: typeof AuthenticatedBookRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -214,34 +204,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/confirmation/$id': {
-      id: '/_authenticated/confirmation/$id'
-      path: '/confirmation/$id'
-      fullPath: '/confirmation/$id'
-      preLoaderRoute: typeof AuthenticatedConfirmationIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
-  AuthenticatedBookRoute: typeof AuthenticatedBookRoute
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDoctorRoute: typeof AuthenticatedDoctorRoute
-  AuthenticatedQueueRoute: typeof AuthenticatedQueueRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedConfirmationIdRoute: typeof AuthenticatedConfirmationIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
-  AuthenticatedBookRoute: AuthenticatedBookRoute,
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDoctorRoute: AuthenticatedDoctorRoute,
-  AuthenticatedQueueRoute: AuthenticatedQueueRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedConfirmationIdRoute: AuthenticatedConfirmationIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -251,6 +226,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  BookRoute: BookRoute,
+  QueueRoute: QueueRoute,
+  ConfirmationIdRoute: ConfirmationIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

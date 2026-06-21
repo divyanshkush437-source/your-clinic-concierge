@@ -9,7 +9,7 @@ import { useI18n } from "@/lib/i18n";
 import { CLINIC, APPOINTMENT_STATUS_LABEL } from "@/lib/clinic";
 import { CheckCircle2, MapPin, Stethoscope, Calendar, Clock, Hash } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/confirmation/$id")({
+export const Route = createFileRoute("/confirmation/$id")({
   component: Confirmation,
 });
 
