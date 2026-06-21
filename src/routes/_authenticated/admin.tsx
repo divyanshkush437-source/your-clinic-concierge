@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
     if (!user) throw redirect({ to: "/auth" });
     const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
     const isStaff = (roles ?? []).some(r => r.role === "staff");
-    if (!isStaff) throw redirect({ to: "/dashboard" });
+    if (!isStaff) throw redirect({ to: "/" });
   },
   component: AdminPage,
 });
@@ -47,11 +47,11 @@ function AdminPage() {
       .order("token_number", { ascending: true, nullsFirst: false });
     if (!appts) return;
     const ids = appts.map(a => a.patient_id);
-    const [{ data: profiles }, { data: pays }] = await Promise.all([
-      supabase.from("profiles").select("id, full_name, mobile").in("id", ids),
+    const [{ data: patients }, { data: pays }] = await Promise.all([
+      supabase.from("patients").select("id, full_name, mobile").in("id", ids),
       supabase.from("payments").select("appointment_id, status").in("appointment_id", appts.map(a => a.id)),
     ]);
-    const pMap = new Map((profiles ?? []).map(p => [p.id, p]));
+    const pMap = new Map((patients ?? []).map(p => [p.id, p]));
     const payMap = new Map((pays ?? []).map(p => [p.appointment_id, p]));
     setRows(appts.map(a => ({ ...a, patient: pMap.get(a.patient_id) as any, payment: payMap.get(a.id) as any })));
   }

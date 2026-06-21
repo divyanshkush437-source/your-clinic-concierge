@@ -9,12 +9,13 @@ import { useI18n } from "@/lib/i18n";
 import { CLINIC, APPOINTMENT_STATUS_LABEL } from "@/lib/clinic";
 import { CheckCircle2, MapPin, Stethoscope, Calendar, Clock, Hash } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/confirmation/$id")({
+export const Route = createFileRoute("/confirmation/$id")({
   component: Confirmation,
 });
 
 type Appt = {
   id: string;
+  patient_id: string;
   appointment_date: string;
   token_number: number | null;
   status: string;
@@ -31,20 +32,22 @@ function Confirmation() {
 
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const [{ data: a }, { data: pr }, { data: p }] = await Promise.all([
-        supabase.from("appointments").select("id, appointment_date, token_number, status, consultation_fee, estimated_time").eq("id", id).single(),
-        supabase.from("profiles").select("full_name").eq("id", user.id).single(),
-        supabase.from("payments").select("status").eq("appointment_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      ]);
-      if (a) setAppt(a as Appt);
-      if (pr) setPatientName(pr.full_name ?? "");
-      if (p) setPaid((p.status as any) ?? "pending");
+      const { data: a } = await supabase
+        .from("appointments")
+        .select("id, patient_id, appointment_date, token_number, status, consultation_fee, estimated_time")
+        .eq("id", id)
+        .single();
+      if (a) {
+        setAppt(a as Appt);
+        const [{ data: pat }, { data: p }] = await Promise.all([
+          supabase.from("patients").select("full_name").eq("id", a.patient_id).single(),
+          supabase.from("payments").select("status").eq("appointment_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        ]);
+        if (pat) setPatientName(pat.full_name ?? "");
+        if (p) setPaid((p.status as any) ?? "pending");
+      }
     })();
   }, [id]);
-
-  const slotTime = appt?.token_number ? estimateTime(appt.token_number) : "—";
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,25 +63,23 @@ function Confirmation() {
 
         <Card className="mt-6 bg-hero p-7 text-center text-primary-foreground shadow-elevated">
           <div className="text-xs font-bold uppercase tracking-widest opacity-80">{t("tokenNumber")}</div>
-          <div className="mt-1 text-7xl font-extrabold tracking-tight">
-            {appt?.token_number ?? "…"}
-          </div>
+          <div className="mt-1 text-7xl font-extrabold tracking-tight">{appt?.token_number ?? "…"}</div>
           <div className="mt-2 text-sm opacity-85">{patientName}</div>
         </Card>
 
         <Card className="mt-5 p-6 shadow-card">
-          <Row icon={Hash}      title={t("appointmentId")}  value={appt?.id?.slice(0, 8).toUpperCase() ?? "—"} />
-          <Row icon={Calendar}  title={t("appointmentDate")} value={appt?.appointment_date ?? "—"} />
-          <Row icon={Clock}     title={t("appointmentTime")} value={slotTime} />
-          <Row icon={Stethoscope} title={t("doctorName")}    value={CLINIC.doctor.name} />
-          <Row icon={MapPin}    title={t("clinicAddress")}   value={CLINIC.address} />
+          <Row icon={Hash}        title={t("appointmentId")}   value={appt?.id?.slice(0, 8).toUpperCase() ?? "—"} />
+          <Row icon={Calendar}    title={t("appointmentDate")} value={appt?.appointment_date ?? "—"} />
+          <Row icon={Clock}       title={t("appointmentTime")} value={appt?.estimated_time ?? "—"} />
+          <Row icon={Stethoscope} title={t("doctorName")}      value={CLINIC.doctor.name} />
+          <Row icon={MapPin}      title={t("clinicAddress")}   value={CLINIC.address} />
           <div className="mt-4 flex items-center justify-between border-t pt-4">
             <span className="text-sm font-semibold">{t("paymentStatus")}</span>
             <span className={"rounded-full px-3 py-1 text-xs font-bold " + (paid === "paid" ? "bg-success/15 text-success" : "bg-warning/20 text-warning-foreground")}>
               {paid === "paid" ? t("paid") : paid === "failed" ? t("failed") : t("pending")}
             </span>
           </div>
-          {appt && (
+          {appt && APPOINTMENT_STATUS_LABEL[appt.status] && (
             <div className="mt-4 flex items-center justify-between">
               <span className="text-sm font-semibold">Status</span>
               <span className={"rounded-full px-3 py-1 text-xs font-bold " + APPOINTMENT_STATUS_LABEL[appt.status]?.tone}>
@@ -90,7 +91,7 @@ function Confirmation() {
 
         <div className="mt-6 flex flex-col gap-2 sm:flex-row">
           <Button asChild className="h-11 flex-1"><Link to="/queue">{t("viewLive")}</Link></Button>
-          <Button asChild variant="outline" className="h-11 flex-1"><Link to="/dashboard">{t("dashboard")}</Link></Button>
+          <Button asChild variant="outline" className="h-11 flex-1"><Link to="/">Home</Link></Button>
         </div>
       </main>
       <Footer />
@@ -108,11 +109,4 @@ function Row({ icon: Icon, title, value }: { icon: any; title: string; value: st
       </div>
     </div>
   );
-}
-
-function estimateTime(token: number): string {
-  // 10:00 AM start + slotMinutes per token
-  const base = new Date(); base.setHours(10, 0, 0, 0);
-  base.setMinutes(base.getMinutes() + (token - 1) * CLINIC.slotMinutes);
-  return base.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
