@@ -35,30 +35,26 @@ export function Header() {
 
         <nav className="hidden items-center gap-1 md:flex">
           <Link to="/" className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground">{t("home")}</Link>
-          {userId ? (
-            <>
-              <Link to="/dashboard" className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground">{t("dashboard")}</Link>
-              <Link to="/queue" className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground">{t("queueLive")}</Link>
-            </>
-          ) : null}
+          <Link to="/queue" className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground">{t("queueLive")}</Link>
+          {userId && (
+            <Link to="/admin" className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground">{t("admin")}</Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={toggle} aria-label="Toggle language" className="gap-1.5">
             <Languages className="h-4 w-4" /> <span className="text-xs font-semibold">{lang === "en" ? "हिं" : "EN"}</span>
           </Button>
+          <Button variant="default" size="sm" asChild className="hidden sm:inline-flex">
+            <Link to="/book">{t("bookNow")}</Link>
+          </Button>
           {userId ? (
-            <>
-              <Button variant="default" size="sm" asChild className="hidden sm:inline-flex">
-                <Link to="/book">{t("bookNow")}</Link>
-              </Button>
-              <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </>
+            <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
+              <LogOut className="h-4 w-4" />
+            </Button>
           ) : (
-            <Button size="sm" asChild>
-              <Link to="/auth">{t("signIn")}</Link>
+            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+              <Link to="/auth">Staff</Link>
             </Button>
           )}
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(v => !v)} aria-label="Menu">
@@ -71,9 +67,11 @@ export function Header() {
         <div className="border-t bg-background md:hidden">
           <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
             <Link to="/" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary">{t("home")}</Link>
-            {userId && <Link to="/dashboard" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary">{t("dashboard")}</Link>}
-            {userId && <Link to="/queue" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary">{t("queueLive")}</Link>}
-            {userId && <Link to="/book" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium text-primary">{t("bookNow")}</Link>}
+            <Link to="/queue" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary">{t("queueLive")}</Link>
+            <Link to="/book" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium text-primary">{t("bookNow")}</Link>
+            {userId
+              ? <Link to="/admin" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary">{t("admin")}</Link>
+              : <Link to="/auth" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary">Staff login</Link>}
           </div>
         </div>
       )}
