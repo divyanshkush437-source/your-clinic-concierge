@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/doctor")({
     if (!user) throw redirect({ to: "/auth" });
     const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
     const isDoctor = (roles ?? []).some(r => r.role === "doctor");
-    if (!isDoctor) throw redirect({ to: "/dashboard" });
+    if (!isDoctor) throw redirect({ to: "/" });
   },
   component: DoctorPage,
 });
