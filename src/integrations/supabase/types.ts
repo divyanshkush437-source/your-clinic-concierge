@@ -83,6 +83,33 @@ export type Database = {
         }
         Relationships: []
       }
+      patients: {
+        Row: {
+          age: number
+          created_at: string
+          full_name: string
+          gender: string
+          id: string
+          mobile: string
+        }
+        Insert: {
+          age: number
+          created_at?: string
+          full_name: string
+          gender: string
+          id?: string
+          mobile: string
+        }
+        Update: {
+          age?: number
+          created_at?: string
+          full_name?: string
+          gender?: string
+          id?: string
+          mobile?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
