@@ -31,8 +31,8 @@ function DoctorPage() {
       .not("token_number", "is", null)
       .order("token_number");
     if (!appts) return;
-    const { data: profiles } = await supabase.from("profiles").select("id, full_name, age, gender, mobile").in("id", appts.map(a => a.patient_id));
-    const pm = new Map((profiles ?? []).map(p => [p.id, p]));
+    const { data: patients } = await supabase.from("patients").select("id, full_name, age, gender, mobile").in("id", appts.map(a => a.patient_id));
+    const pm = new Map((patients ?? []).map(p => [p.id, p]));
     setRows(appts.map(a => ({ ...a, patient: pm.get(a.patient_id) })));
   }
   useEffect(() => {
