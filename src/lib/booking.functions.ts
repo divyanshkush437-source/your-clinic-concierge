@@ -1,38 +1,53 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
-const PUBLIC_RAZORPAY_KEY = () => process.env.RAZORPAY_KEY_ID ?? "";
-
 export const getRazorpayPublicKey = createServerFn({ method: "GET" }).handler(async () => {
-  return { keyId: PUBLIC_RAZORPAY_KEY() };
+  return { keyId: process.env.RAZORPAY_KEY_ID ?? "" };
 });
 
 /**
- * Creates an appointment row (status=booked, no token yet), a pending payment row,
- * and a Razorpay order. Returns ids + order details for the client checkout.
+ * Guest booking: creates patient + appointment (status=booked, no token yet)
+ * + pending payment + Razorpay order. No login required.
  */
 export const createBookingOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
     z.object({
+      full_name: z.string().trim().min(2).max(100),
+      mobile: z.string().trim().regex(/^[6-9]\d{9}$/),
+      age: z.number().int().min(1).max(120),
+      gender: z.enum(["male", "female", "other"]),
       appointmentDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      appointmentTime: z.string().min(1).max(20),
       amount: z.number().int().positive().max(100000),
     }).parse(d),
   )
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data }) => {
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
     if (!keyId || !keySecret) throw new Error("Payment provider not configured");
 
-    const { supabase, userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // 1. Insert appointment (no token yet — assigned after payment)
-    const { data: appt, error: apptErr } = await supabase
+    // 1. Patient
+    const { data: patient, error: patErr } = await supabaseAdmin
+      .from("patients")
+      .insert({
+        full_name: data.full_name,
+        mobile: data.mobile,
+        age: data.age,
+        gender: data.gender,
+      })
+      .select("id")
+      .single();
+    if (patErr || !patient) throw new Error(patErr?.message || "Could not save patient");
+
+    // 2. Appointment
+    const { data: appt, error: apptErr } = await supabaseAdmin
       .from("appointments")
       .insert({
-        patient_id: userId,
+        patient_id: patient.id,
         appointment_date: data.appointmentDate,
+        estimated_time: data.appointmentTime,
         status: "booked",
         consultation_fee: data.amount,
       })
@@ -40,12 +55,12 @@ export const createBookingOrder = createServerFn({ method: "POST" })
       .single();
     if (apptErr || !appt) throw new Error(apptErr?.message || "Could not create appointment");
 
-    // 2. Insert payment (pending)
-    const { data: pay, error: payErr } = await supabase
+    // 3. Payment (pending)
+    const { data: pay, error: payErr } = await supabaseAdmin
       .from("payments")
       .insert({
         appointment_id: appt.id,
-        patient_id: userId,
+        patient_id: patient.id,
         amount: data.amount,
         status: "pending",
       })
@@ -53,7 +68,7 @@ export const createBookingOrder = createServerFn({ method: "POST" })
       .single();
     if (payErr || !pay) throw new Error(payErr?.message || "Could not create payment");
 
-    // 3. Razorpay order — amount in paise
+    // 4. Razorpay order — amount in paise
     const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
     const res = await fetch("https://api.razorpay.com/v1/orders", {
       method: "POST",
@@ -62,20 +77,16 @@ export const createBookingOrder = createServerFn({ method: "POST" })
         amount: Math.round(data.amount * 100),
         currency: "INR",
         receipt: pay.id,
-        notes: { appointment_id: appt.id, patient_id: userId },
+        notes: { appointment_id: appt.id, patient_id: patient.id },
       }),
     });
     if (!res.ok) {
-      const txt = await res.text();
-      console.error("Razorpay order failed:", txt);
+      console.error("Razorpay order failed:", await res.text());
       throw new Error("Could not create payment order");
     }
     const order = await res.json() as { id: string; amount: number; currency: string };
 
-    await supabase
-      .from("payments")
-      .update({ razorpay_order_id: order.id })
-      .eq("id", pay.id);
+    await supabaseAdmin.from("payments").update({ razorpay_order_id: order.id }).eq("id", pay.id);
 
     return {
       keyId,
@@ -84,15 +95,14 @@ export const createBookingOrder = createServerFn({ method: "POST" })
       currency: order.currency,
       appointmentId: appt.id,
       paymentId: pay.id,
+      patientId: patient.id,
     };
   });
 
 /**
- * Verifies Razorpay signature, marks payment paid, allocates a token number,
- * and returns the confirmed appointment id.
+ * Verifies Razorpay signature, marks payment paid, allocates a token number.
  */
 export const verifyBookingPayment = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
     z.object({
       appointmentId: z.string().uuid(),
@@ -102,7 +112,7 @@ export const verifyBookingPayment = createServerFn({ method: "POST" })
       razorpay_signature: z.string().min(1),
     }).parse(d),
   )
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data }) => {
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
     if (!keySecret) throw new Error("Payment provider not configured");
 
@@ -114,22 +124,19 @@ export const verifyBookingPayment = createServerFn({ method: "POST" })
     const b = Buffer.from(data.razorpay_signature);
     const ok = a.length === b.length && timingSafeEqual(a, b);
 
-    const { supabase, userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     if (!ok) {
-      await supabase.from("payments").update({ status: "failed" }).eq("id", data.paymentId);
+      await supabaseAdmin.from("payments").update({ status: "failed" }).eq("id", data.paymentId);
       throw new Error("Invalid payment signature");
     }
 
-    // Allocate token via admin (function is restricted from authenticated)
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: apptRow, error: apptFetchErr } = await supabaseAdmin
       .from("appointments")
-      .select("appointment_date, patient_id")
+      .select("appointment_date")
       .eq("id", data.appointmentId)
       .single();
     if (apptFetchErr || !apptRow) throw new Error("Appointment not found");
-    if (apptRow.patient_id !== userId) throw new Error("Forbidden");
 
     const { data: tokenData, error: tokenErr } = await supabaseAdmin
       .rpc("allocate_token", { _date: apptRow.appointment_date });
@@ -141,7 +148,7 @@ export const verifyBookingPayment = createServerFn({ method: "POST" })
       .update({ token_number: tokenNumber })
       .eq("id", data.appointmentId);
 
-    await supabase
+    await supabaseAdmin
       .from("payments")
       .update({
         status: "paid",
