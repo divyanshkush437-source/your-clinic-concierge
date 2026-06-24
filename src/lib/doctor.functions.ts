@@ -14,7 +14,7 @@ const profileSchema = z.object({
   consultation_fee: z.number().int().min(0).max(100000),
   phone: z.string().trim().regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile"),
   email: z.string().trim().email().max(200),
-  profile_photo_url: z.string().trim().max(500).optional().default(""),
+  profile_photo_url: z.string().trim().max(500).default(""),
   available_days: z.array(z.enum(["mon","tue","wed","thu","fri","sat","sun"])).min(1),
   time_start: z.string().regex(/^\d{2}:\d{2}$/),
   time_end: z.string().regex(/^\d{2}:\d{2}$/),

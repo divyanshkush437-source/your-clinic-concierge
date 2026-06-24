@@ -34,7 +34,7 @@ const schema = z.object({
   consultation_fee: z.coerce.number().int().min(0).max(100000),
   phone: z.string().trim().regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile"),
   email: z.string().trim().email(),
-  profile_photo_url: z.string().trim().max(500).optional().default(""),
+  profile_photo_url: z.string().trim().max(500).default(""),
   available_days: z.array(z.string()).min(1, "Select at least one day"),
   time_start: z.string().regex(/^\d{2}:\d{2}$/),
   time_end: z.string().regex(/^\d{2}:\d{2}$/),
