@@ -19,6 +19,7 @@ export type Database = {
           appointment_date: string
           consultation_fee: number
           created_at: string
+          doctor_id: string | null
           estimated_time: string | null
           id: string
           notes: string | null
@@ -31,6 +32,7 @@ export type Database = {
           appointment_date: string
           consultation_fee?: number
           created_at?: string
+          doctor_id?: string | null
           estimated_time?: string | null
           id?: string
           notes?: string | null
@@ -43,6 +45,7 @@ export type Database = {
           appointment_date?: string
           consultation_fee?: number
           created_at?: string
+          doctor_id?: string | null
           estimated_time?: string | null
           id?: string
           notes?: string | null
@@ -51,35 +54,127 @@ export type Database = {
           token_number?: number | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "appointments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      clinic_settings: {
+      doctor_reviews: {
         Row: {
-          clinic_timing: string
+          comment: string
+          created_at: string
+          doctor_id: string
+          id: string
+          patient_id: string | null
+          rating: number
+        }
+        Insert: {
+          comment?: string
+          created_at?: string
+          doctor_id: string
+          id?: string
+          patient_id?: string | null
+          rating: number
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          patient_id?: string | null
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_reviews_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_reviews_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctors: {
+        Row: {
+          available_days: string[]
+          city: string
+          clinic_address: string
+          clinic_name: string
           consultation_fee: number
           created_at: string
           doctor_name: string
-          id: boolean
-          max_patients_per_day: number
+          email: string
+          experience_years: number
+          id: string
+          phone: string
+          profile_photo_url: string
+          qualification: string
+          slot_minutes: number
+          specialization: string
+          state: string
+          time_end: string
+          time_start: string
           updated_at: string
+          user_id: string
+          verification_status: string
         }
         Insert: {
-          clinic_timing?: string
+          available_days?: string[]
+          city?: string
+          clinic_address?: string
+          clinic_name?: string
           consultation_fee?: number
           created_at?: string
-          doctor_name?: string
-          id?: boolean
-          max_patients_per_day?: number
+          doctor_name: string
+          email?: string
+          experience_years?: number
+          id?: string
+          phone?: string
+          profile_photo_url?: string
+          qualification?: string
+          slot_minutes?: number
+          specialization?: string
+          state?: string
+          time_end?: string
+          time_start?: string
           updated_at?: string
+          user_id: string
+          verification_status?: string
         }
         Update: {
-          clinic_timing?: string
+          available_days?: string[]
+          city?: string
+          clinic_address?: string
+          clinic_name?: string
           consultation_fee?: number
           created_at?: string
           doctor_name?: string
-          id?: boolean
-          max_patients_per_day?: number
+          email?: string
+          experience_years?: number
+          id?: string
+          phone?: string
+          profile_photo_url?: string
+          qualification?: string
+          slot_minutes?: number
+          specialization?: string
+          state?: string
+          time_end?: string
+          time_start?: string
           updated_at?: string
+          user_id?: string
+          verification_status?: string
         }
         Relationships: []
       }
@@ -116,6 +211,7 @@ export type Database = {
           appointment_id: string
           created_at: string
           currency: string
+          doctor_id: string | null
           id: string
           patient_id: string
           razorpay_order_id: string | null
@@ -129,6 +225,7 @@ export type Database = {
           appointment_id: string
           created_at?: string
           currency?: string
+          doctor_id?: string | null
           id?: string
           patient_id: string
           razorpay_order_id?: string | null
@@ -142,6 +239,7 @@ export type Database = {
           appointment_id?: string
           created_at?: string
           currency?: string
+          doctor_id?: string | null
           id?: string
           patient_id?: string
           razorpay_order_id?: string | null
@@ -156,6 +254,13 @@ export type Database = {
             columns: ["appointment_id"]
             isOneToOne: false
             referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
             referencedColumns: ["id"]
           },
         ]
@@ -217,39 +322,16 @@ export type Database = {
         }
         Relationships: []
       }
-      waiting_list: {
-        Row: {
-          appointment_date: string
-          created_at: string
-          id: string
-          notified: boolean
-          patient_id: string
-          position: number
-        }
-        Insert: {
-          appointment_date: string
-          created_at?: string
-          id?: string
-          notified?: boolean
-          patient_id: string
-          position: number
-        }
-        Update: {
-          appointment_date?: string
-          created_at?: string
-          id?: string
-          notified?: boolean
-          patient_id?: string
-          position?: number
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      allocate_token: { Args: { _date: string }; Returns: number }
+      allocate_token: {
+        Args: { _date: string; _doctor_id: string }
+        Returns: number
+      }
+      bootstrap_admin_if_none: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -259,7 +341,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "patient" | "staff" | "doctor"
+      app_role: "patient" | "staff" | "doctor" | "admin"
       appointment_status:
         | "booked"
         | "arrived"
@@ -395,7 +477,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["patient", "staff", "doctor"],
+      app_role: ["patient", "staff", "doctor", "admin"],
       appointment_status: [
         "booked",
         "arrived",

@@ -5,22 +5,28 @@ import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
-import { CLINIC } from "@/lib/clinic";
 import { Activity, Clock, Users } from "lucide-react";
 
-export const Route = createFileRoute("/queue")({
+export const Route = createFileRoute("/queue/$doctorId")({
   component: QueuePage,
 });
 
 function QueuePage() {
+  const { doctorId } = Route.useParams();
   const { t } = useI18n();
   const today = new Date().toISOString().slice(0, 10);
+  const [doc, setDoc] = useState<any>(null);
   const [appts, setAppts] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase.from("doctors").select("doctor_name, slot_minutes").eq("id", doctorId).maybeSingle().then(({ data }) => setDoc(data));
+  }, [doctorId]);
 
   async function load() {
     const { data } = await supabase
       .from("appointments")
       .select("id, token_number, status")
+      .eq("doctor_id", doctorId)
       .eq("appointment_date", today)
       .not("token_number", "is", null)
       .neq("status", "cancelled")
@@ -31,17 +37,18 @@ function QueuePage() {
   useEffect(() => {
     load();
     const ch = supabase
-      .channel("queue-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, () => load())
+      .channel(`queue-${doctorId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "appointments", filter: `doctor_id=eq.${doctorId}` }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [today]);
+  }, [doctorId, today]);
 
   const consulting = appts.find(a => a.status === "consulting");
   const inQueue = appts.filter(a => a.status === "in_queue" || a.status === "arrived" || a.status === "booked");
   const next = inQueue[0];
   const waiting = inQueue.length;
-  const estMinutes = waiting * CLINIC.slotMinutes;
+  const slotMin = doc?.slot_minutes ?? 15;
+  const estMinutes = waiting * slotMin;
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,7 +59,7 @@ function QueuePage() {
           {t("queueLive").toUpperCase()}
         </div>
         <h1 className="mt-1 text-3xl font-extrabold">{t("todaySchedule")}</h1>
-        <p className="text-sm text-muted-foreground">{CLINIC.doctor.name} • {new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}</p>
+        <p className="text-sm text-muted-foreground">{doc?.doctor_name ?? "Doctor"} • {new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}</p>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <Card className="bg-hero p-6 text-primary-foreground shadow-elevated">

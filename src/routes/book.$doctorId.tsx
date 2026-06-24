@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
@@ -19,25 +19,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 
-import { CLINIC } from "@/lib/clinic";
+import { supabase } from "@/integrations/supabase/client";
+import { generateSlots } from "@/lib/clinic";
 import { useI18n } from "@/lib/i18n";
 import { loadRazorpay } from "@/lib/razorpay";
 import { createBookingOrder, verifyBookingPayment } from "@/lib/booking.functions";
 
-export const Route = createFileRoute("/book")({
-  head: () => ({
-    meta: [
-      { title: `Book Appointment — ${CLINIC.name}` },
-      { name: "description", content: `Book an appointment with ${CLINIC.doctor.name}. No account needed — pay online and get an instant token.` },
-    ],
-  }),
+export const Route = createFileRoute("/book/$doctorId")({
   component: BookPage,
 });
-
-const TIME_SLOTS = [
-  "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
-  "17:00", "17:30", "18:00", "18:30", "19:00", "19:30",
-];
 
 function ymd(d: Date) {
   const y = d.getFullYear();
@@ -59,6 +49,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 function BookPage() {
+  const { doctorId } = Route.useParams();
   const { t } = useI18n();
   const navigate = useNavigate();
   const createOrder = useServerFn(createBookingOrder);
@@ -66,13 +57,25 @@ function BookPage() {
 
   const today = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
   const [submitting, setSubmitting] = useState(false);
+  const [doc, setDoc] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("doctors").select("*").eq("id", doctorId).eq("verification_status", "approved").maybeSingle();
+      setDoc(data);
+    })();
+  }, [doctorId]);
+
+  const slots = useMemo(
+    () => doc ? generateSlots(doc.time_start, doc.time_end, doc.slot_minutes ?? 30) : [],
+    [doc],
+  );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     mode: "onTouched",
     defaultValues: {
-      full_name: "",
-      mobile: "",
+      full_name: "", mobile: "",
       age: undefined as unknown as number,
       gender: undefined as unknown as "male",
       appointment_date: today,
@@ -81,17 +84,18 @@ function BookPage() {
   });
 
   async function onSubmit(values: FormValues) {
+    if (!doc) return;
     setSubmitting(true);
     try {
       const order = await createOrder({
         data: {
+          doctorId: doc.id,
           full_name: values.full_name,
           mobile: values.mobile,
           age: values.age,
           gender: values.gender,
           appointmentDate: ymd(values.appointment_date),
           appointmentTime: values.appointment_time,
-          amount: CLINIC.consultationFee,
         },
       });
 
@@ -101,8 +105,8 @@ function BookPage() {
         amount: order.amount,
         currency: order.currency,
         order_id: order.orderId,
-        name: CLINIC.name,
-        description: `Consultation with ${CLINIC.doctor.name}`,
+        name: doc.clinic_name || "SmartClinic",
+        description: `Consultation with ${order.doctorName}`,
         prefill: { name: values.full_name, contact: values.mobile },
         theme: { color: "#2c5fdb" },
         handler: async (resp: any) => {
@@ -132,14 +136,25 @@ function BookPage() {
     }
   }
 
+  if (!doc) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="mx-auto max-w-2xl px-4 py-16 text-center">
+          <p className="text-sm text-muted-foreground">Loading doctor…</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="mx-auto max-w-4xl px-4 py-8">
-        <h1 className="text-3xl font-extrabold">{t("book")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {CLINIC.doctor.name} • {CLINIC.doctor.specialization}
-        </p>
+        <Link to="/doctors/$id" params={{ id: doc.id }} className="text-sm text-muted-foreground hover:text-foreground">← Back to profile</Link>
+        <h1 className="mt-2 text-3xl font-extrabold">{t("book")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{doc.doctor_name} • {doc.specialization}</p>
 
         <div className="mt-6 grid gap-5 md:grid-cols-[1fr_320px]">
           <Card className="p-5 shadow-card md:p-6">
@@ -211,7 +226,7 @@ function BookPage() {
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl><SelectTrigger className="h-11"><SelectValue placeholder="Select time" /></SelectTrigger></FormControl>
                         <SelectContent>
-                          {TIME_SLOTS.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+                          {slots.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -228,24 +243,26 @@ function BookPage() {
 
           <Card className="h-fit p-5 shadow-card">
             <div className="flex items-center gap-3">
-              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
-                <Stethoscope className="h-6 w-6" />
+              <div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-primary-soft text-primary">
+                {doc.profile_photo_url
+                  ? <img src={doc.profile_photo_url} alt="" className="h-full w-full object-cover" />
+                  : <Stethoscope className="h-6 w-6" />}
               </div>
               <div className="min-w-0">
-                <div className="truncate font-bold">{CLINIC.doctor.name}</div>
-                <div className="truncate text-xs text-muted-foreground">{CLINIC.doctor.specialization}</div>
+                <div className="truncate font-bold">{doc.doctor_name}</div>
+                <div className="truncate text-xs text-muted-foreground">{doc.specialization}</div>
               </div>
             </div>
             <div className="my-4 h-px bg-border" />
             <div className="flex items-start gap-2 text-sm">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <span className="text-muted-foreground">{CLINIC.address}</span>
+              <span className="text-muted-foreground">{doc.clinic_name}, {doc.clinic_address}, {doc.city}</span>
             </div>
             <div className="my-4 h-px bg-border" />
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold">{t("consultationFee")}</span>
               <span className="flex items-center text-xl font-extrabold text-primary">
-                <IndianRupee className="h-5 w-5" />{CLINIC.consultationFee}
+                <IndianRupee className="h-5 w-5" />{doc.consultation_fee}
               </span>
             </div>
             <p className="mt-4 text-center text-[11px] text-muted-foreground">

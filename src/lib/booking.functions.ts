@@ -6,19 +6,20 @@ export const getRazorpayPublicKey = createServerFn({ method: "GET" }).handler(as
 });
 
 /**
- * Guest booking: creates patient + appointment (status=booked, no token yet)
- * + pending payment + Razorpay order. No login required.
+ * Guest booking for a specific doctor: creates patient + appointment (status=booked, no token yet)
+ * + pending payment + Razorpay order. No login required. Consultation fee is read from the
+ * doctor row server-side — client-sent amount is ignored.
  */
 export const createBookingOrder = createServerFn({ method: "POST" })
   .inputValidator((d) =>
     z.object({
+      doctorId: z.string().uuid(),
       full_name: z.string().trim().min(2).max(100),
       mobile: z.string().trim().regex(/^[6-9]\d{9}$/),
       age: z.number().int().min(1).max(120),
       gender: z.enum(["male", "female", "other"]),
       appointmentDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       appointmentTime: z.string().min(1).max(20),
-      amount: z.number().int().positive().max(100000),
     }).parse(d),
   )
   .handler(async ({ data }) => {
@@ -27,6 +28,17 @@ export const createBookingOrder = createServerFn({ method: "POST" })
     if (!keyId || !keySecret) throw new Error("Payment provider not configured");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Fetch doctor (must be approved)
+    const { data: doctor, error: docErr } = await supabaseAdmin
+      .from("doctors")
+      .select("id, consultation_fee, verification_status, doctor_name")
+      .eq("id", data.doctorId)
+      .single();
+    if (docErr || !doctor) throw new Error("Doctor not found");
+    if (doctor.verification_status !== "approved") throw new Error("Doctor not available for bookings");
+    const amount = doctor.consultation_fee;
+    if (!amount || amount < 1) throw new Error("Doctor has no consultation fee set");
 
     // 1. Patient
     const { data: patient, error: patErr } = await supabaseAdmin
@@ -45,11 +57,12 @@ export const createBookingOrder = createServerFn({ method: "POST" })
     const { data: appt, error: apptErr } = await supabaseAdmin
       .from("appointments")
       .insert({
+        doctor_id: doctor.id,
         patient_id: patient.id,
         appointment_date: data.appointmentDate,
         estimated_time: data.appointmentTime,
         status: "booked",
-        consultation_fee: data.amount,
+        consultation_fee: amount,
       })
       .select("id")
       .single();
@@ -61,7 +74,8 @@ export const createBookingOrder = createServerFn({ method: "POST" })
       .insert({
         appointment_id: appt.id,
         patient_id: patient.id,
-        amount: data.amount,
+        doctor_id: doctor.id,
+        amount,
         status: "pending",
       })
       .select("id")
@@ -74,10 +88,10 @@ export const createBookingOrder = createServerFn({ method: "POST" })
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Basic ${auth}` },
       body: JSON.stringify({
-        amount: Math.round(data.amount * 100),
+        amount: Math.round(amount * 100),
         currency: "INR",
         receipt: pay.id,
-        notes: { appointment_id: appt.id, patient_id: patient.id },
+        notes: { appointment_id: appt.id, doctor_id: doctor.id },
       }),
     });
     if (!res.ok) {
@@ -96,11 +110,12 @@ export const createBookingOrder = createServerFn({ method: "POST" })
       appointmentId: appt.id,
       paymentId: pay.id,
       patientId: patient.id,
+      doctorName: doctor.doctor_name,
     };
   });
 
 /**
- * Verifies Razorpay signature, marks payment paid, allocates a token number.
+ * Verifies Razorpay signature, marks payment paid, allocates a token number per-doctor per-day.
  */
 export const verifyBookingPayment = createServerFn({ method: "POST" })
   .inputValidator((d) =>
@@ -133,13 +148,13 @@ export const verifyBookingPayment = createServerFn({ method: "POST" })
 
     const { data: apptRow, error: apptFetchErr } = await supabaseAdmin
       .from("appointments")
-      .select("appointment_date")
+      .select("appointment_date, doctor_id")
       .eq("id", data.appointmentId)
       .single();
-    if (apptFetchErr || !apptRow) throw new Error("Appointment not found");
+    if (apptFetchErr || !apptRow || !apptRow.doctor_id) throw new Error("Appointment not found");
 
     const { data: tokenData, error: tokenErr } = await supabaseAdmin
-      .rpc("allocate_token", { _date: apptRow.appointment_date });
+      .rpc("allocate_token", { _doctor_id: apptRow.doctor_id, _date: apptRow.appointment_date });
     if (tokenErr) throw new Error(tokenErr.message);
     const tokenNumber = tokenData as unknown as number;
 

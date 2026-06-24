@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
-import { CLINIC, APPOINTMENT_STATUS_LABEL } from "@/lib/clinic";
+import { APPOINTMENT_STATUS_LABEL } from "@/lib/clinic";
 import { CheckCircle2, MapPin, Stethoscope, Calendar, Clock, Hash } from "lucide-react";
 
 export const Route = createFileRoute("/confirmation/$id")({
@@ -16,6 +16,7 @@ export const Route = createFileRoute("/confirmation/$id")({
 type Appt = {
   id: string;
   patient_id: string;
+  doctor_id: string | null;
   appointment_date: string;
   token_number: number | null;
   status: string;
@@ -28,23 +29,28 @@ function Confirmation() {
   const { t, lang } = useI18n();
   const [appt, setAppt] = useState<Appt | null>(null);
   const [patientName, setPatientName] = useState("");
+  const [doctor, setDoctor] = useState<{ id: string; doctor_name: string; clinic_address: string } | null>(null);
   const [paid, setPaid] = useState<"paid" | "pending" | "failed">("pending");
 
   useEffect(() => {
     (async () => {
       const { data: a } = await supabase
         .from("appointments")
-        .select("id, patient_id, appointment_date, token_number, status, consultation_fee, estimated_time")
+        .select("id, patient_id, doctor_id, appointment_date, token_number, status, consultation_fee, estimated_time")
         .eq("id", id)
         .single();
       if (a) {
         setAppt(a as Appt);
-        const [{ data: pat }, { data: p }] = await Promise.all([
+        const [{ data: pat }, { data: p }, { data: d }] = await Promise.all([
           supabase.from("patients").select("full_name").eq("id", a.patient_id).single(),
           supabase.from("payments").select("status").eq("appointment_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+          a.doctor_id
+            ? supabase.from("doctors").select("id, doctor_name, clinic_address").eq("id", a.doctor_id).maybeSingle()
+            : Promise.resolve({ data: null }),
         ]);
         if (pat) setPatientName(pat.full_name ?? "");
         if (p) setPaid((p.status as any) ?? "pending");
+        if (d) setDoctor(d as any);
       }
     })();
   }, [id]);
@@ -71,12 +77,12 @@ function Confirmation() {
           <Row icon={Hash}        title={t("appointmentId")}   value={appt?.id?.slice(0, 8).toUpperCase() ?? "—"} />
           <Row icon={Calendar}    title={t("appointmentDate")} value={appt?.appointment_date ?? "—"} />
           <Row icon={Clock}       title={t("appointmentTime")} value={appt?.estimated_time ?? "—"} />
-          <Row icon={Stethoscope} title={t("doctorName")}      value={CLINIC.doctor.name} />
-          <Row icon={MapPin}      title={t("clinicAddress")}   value={CLINIC.address} />
+          <Row icon={Stethoscope} title={t("doctorName")}      value={doctor?.doctor_name ?? "—"} />
+          <Row icon={MapPin}      title="Clinic Address"       value={doctor?.clinic_address ?? "—"} />
           <div className="mt-4 flex items-center justify-between border-t pt-4">
             <span className="text-sm font-semibold">{t("paymentStatus")}</span>
             <span className={"rounded-full px-3 py-1 text-xs font-bold " + (paid === "paid" ? "bg-success/15 text-success" : "bg-warning/20 text-warning-foreground")}>
-              {paid === "paid" ? t("paid") : paid === "failed" ? t("failed") : t("pending")}
+              {paid === "paid" ? t("paid") : paid === "failed" ? t("failed") : t("pending2")}
             </span>
           </div>
           {appt && APPOINTMENT_STATUS_LABEL[appt.status] && (
@@ -90,7 +96,11 @@ function Confirmation() {
         </Card>
 
         <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-          <Button asChild className="h-11 flex-1"><Link to="/queue">{t("viewLive")}</Link></Button>
+          {doctor && (
+            <Button asChild className="h-11 flex-1">
+              <Link to="/queue/$doctorId" params={{ doctorId: doctor.id }}>{t("viewLive")}</Link>
+            </Button>
+          )}
           <Button asChild variant="outline" className="h-11 flex-1"><Link to="/">Home</Link></Button>
         </div>
       </main>

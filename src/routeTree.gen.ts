@@ -9,24 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as QueueRouteImport } from './routes/queue'
-import { Route as BookRouteImport } from './routes/book'
+import { Route as DoctorsRouteImport } from './routes/doctors'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as QueueDoctorIdRouteImport } from './routes/queue.$doctorId'
+import { Route as DoctorsIdRouteImport } from './routes/doctors.$id'
 import { Route as ConfirmationIdRouteImport } from './routes/confirmation.$id'
-import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedDoctorRouteImport } from './routes/_authenticated/doctor'
+import { Route as BookDoctorIdRouteImport } from './routes/book.$doctorId'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedDoctorProfileRouteImport } from './routes/_authenticated/doctor.profile'
+import { Route as AuthenticatedDoctorPendingRouteImport } from './routes/_authenticated/doctor.pending'
+import { Route as AuthenticatedDoctorOnboardingRouteImport } from './routes/_authenticated/doctor.onboarding'
+import { Route as AuthenticatedDoctorDashboardRouteImport } from './routes/_authenticated/doctor.dashboard'
 
-const QueueRoute = QueueRouteImport.update({
-  id: '/queue',
-  path: '/queue',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BookRoute = BookRouteImport.update({
-  id: '/book',
-  path: '/book',
+const DoctorsRoute = DoctorsRouteImport.update({
+  id: '/doctors',
+  path: '/doctors',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -43,116 +42,163 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QueueDoctorIdRoute = QueueDoctorIdRouteImport.update({
+  id: '/queue/$doctorId',
+  path: '/queue/$doctorId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DoctorsIdRoute = DoctorsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => DoctorsRoute,
+} as any)
 const ConfirmationIdRoute = ConfirmationIdRouteImport.update({
   id: '/confirmation/$id',
   path: '/confirmation/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedDoctorRoute = AuthenticatedDoctorRouteImport.update({
-  id: '/doctor',
-  path: '/doctor',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const BookDoctorIdRoute = BookDoctorIdRouteImport.update({
+  id: '/book/$doctorId',
+  path: '/book/$doctorId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDoctorProfileRoute =
+  AuthenticatedDoctorProfileRouteImport.update({
+    id: '/doctor/profile',
+    path: '/doctor/profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDoctorPendingRoute =
+  AuthenticatedDoctorPendingRouteImport.update({
+    id: '/doctor/pending',
+    path: '/doctor/pending',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDoctorOnboardingRoute =
+  AuthenticatedDoctorOnboardingRouteImport.update({
+    id: '/doctor/onboarding',
+    path: '/doctor/onboarding',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDoctorDashboardRoute =
+  AuthenticatedDoctorDashboardRouteImport.update({
+    id: '/doctor/dashboard',
+    path: '/doctor/dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/book': typeof BookRoute
-  '/queue': typeof QueueRoute
+  '/doctors': typeof DoctorsRouteWithChildren
   '/admin': typeof AuthenticatedAdminRoute
-  '/doctor': typeof AuthenticatedDoctorRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/book/$doctorId': typeof BookDoctorIdRoute
   '/confirmation/$id': typeof ConfirmationIdRoute
+  '/doctors/$id': typeof DoctorsIdRoute
+  '/queue/$doctorId': typeof QueueDoctorIdRoute
+  '/doctor/dashboard': typeof AuthenticatedDoctorDashboardRoute
+  '/doctor/onboarding': typeof AuthenticatedDoctorOnboardingRoute
+  '/doctor/pending': typeof AuthenticatedDoctorPendingRoute
+  '/doctor/profile': typeof AuthenticatedDoctorProfileRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/book': typeof BookRoute
-  '/queue': typeof QueueRoute
+  '/doctors': typeof DoctorsRouteWithChildren
   '/admin': typeof AuthenticatedAdminRoute
-  '/doctor': typeof AuthenticatedDoctorRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/book/$doctorId': typeof BookDoctorIdRoute
   '/confirmation/$id': typeof ConfirmationIdRoute
+  '/doctors/$id': typeof DoctorsIdRoute
+  '/queue/$doctorId': typeof QueueDoctorIdRoute
+  '/doctor/dashboard': typeof AuthenticatedDoctorDashboardRoute
+  '/doctor/onboarding': typeof AuthenticatedDoctorOnboardingRoute
+  '/doctor/pending': typeof AuthenticatedDoctorPendingRoute
+  '/doctor/profile': typeof AuthenticatedDoctorProfileRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/book': typeof BookRoute
-  '/queue': typeof QueueRoute
+  '/doctors': typeof DoctorsRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/_authenticated/doctor': typeof AuthenticatedDoctorRoute
-  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/book/$doctorId': typeof BookDoctorIdRoute
   '/confirmation/$id': typeof ConfirmationIdRoute
+  '/doctors/$id': typeof DoctorsIdRoute
+  '/queue/$doctorId': typeof QueueDoctorIdRoute
+  '/_authenticated/doctor/dashboard': typeof AuthenticatedDoctorDashboardRoute
+  '/_authenticated/doctor/onboarding': typeof AuthenticatedDoctorOnboardingRoute
+  '/_authenticated/doctor/pending': typeof AuthenticatedDoctorPendingRoute
+  '/_authenticated/doctor/profile': typeof AuthenticatedDoctorProfileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/book'
-    | '/queue'
+    | '/doctors'
     | '/admin'
-    | '/doctor'
-    | '/settings'
+    | '/book/$doctorId'
     | '/confirmation/$id'
+    | '/doctors/$id'
+    | '/queue/$doctorId'
+    | '/doctor/dashboard'
+    | '/doctor/onboarding'
+    | '/doctor/pending'
+    | '/doctor/profile'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/book'
-    | '/queue'
+    | '/doctors'
     | '/admin'
-    | '/doctor'
-    | '/settings'
+    | '/book/$doctorId'
     | '/confirmation/$id'
+    | '/doctors/$id'
+    | '/queue/$doctorId'
+    | '/doctor/dashboard'
+    | '/doctor/onboarding'
+    | '/doctor/pending'
+    | '/doctor/profile'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/book'
-    | '/queue'
+    | '/doctors'
     | '/_authenticated/admin'
-    | '/_authenticated/doctor'
-    | '/_authenticated/settings'
+    | '/book/$doctorId'
     | '/confirmation/$id'
+    | '/doctors/$id'
+    | '/queue/$doctorId'
+    | '/_authenticated/doctor/dashboard'
+    | '/_authenticated/doctor/onboarding'
+    | '/_authenticated/doctor/pending'
+    | '/_authenticated/doctor/profile'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  BookRoute: typeof BookRoute
-  QueueRoute: typeof QueueRoute
+  DoctorsRoute: typeof DoctorsRouteWithChildren
+  BookDoctorIdRoute: typeof BookDoctorIdRoute
   ConfirmationIdRoute: typeof ConfirmationIdRoute
+  QueueDoctorIdRoute: typeof QueueDoctorIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/queue': {
-      id: '/queue'
-      path: '/queue'
-      fullPath: '/queue'
-      preLoaderRoute: typeof QueueRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/book': {
-      id: '/book'
-      path: '/book'
-      fullPath: '/book'
-      preLoaderRoute: typeof BookRouteImport
+    '/doctors': {
+      id: '/doctors'
+      path: '/doctors'
+      fullPath: '/doctors'
+      preLoaderRoute: typeof DoctorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -176,6 +222,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/queue/$doctorId': {
+      id: '/queue/$doctorId'
+      path: '/queue/$doctorId'
+      fullPath: '/queue/$doctorId'
+      preLoaderRoute: typeof QueueDoctorIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/doctors/$id': {
+      id: '/doctors/$id'
+      path: '/$id'
+      fullPath: '/doctors/$id'
+      preLoaderRoute: typeof DoctorsIdRouteImport
+      parentRoute: typeof DoctorsRoute
+    }
     '/confirmation/$id': {
       id: '/confirmation/$id'
       path: '/confirmation/$id'
@@ -183,19 +243,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfirmationIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/doctor': {
-      id: '/_authenticated/doctor'
-      path: '/doctor'
-      fullPath: '/doctor'
-      preLoaderRoute: typeof AuthenticatedDoctorRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/book/$doctorId': {
+      id: '/book/$doctorId'
+      path: '/book/$doctorId'
+      fullPath: '/book/$doctorId'
+      preLoaderRoute: typeof BookDoctorIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
@@ -204,31 +257,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/doctor/profile': {
+      id: '/_authenticated/doctor/profile'
+      path: '/doctor/profile'
+      fullPath: '/doctor/profile'
+      preLoaderRoute: typeof AuthenticatedDoctorProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/doctor/pending': {
+      id: '/_authenticated/doctor/pending'
+      path: '/doctor/pending'
+      fullPath: '/doctor/pending'
+      preLoaderRoute: typeof AuthenticatedDoctorPendingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/doctor/onboarding': {
+      id: '/_authenticated/doctor/onboarding'
+      path: '/doctor/onboarding'
+      fullPath: '/doctor/onboarding'
+      preLoaderRoute: typeof AuthenticatedDoctorOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/doctor/dashboard': {
+      id: '/_authenticated/doctor/dashboard'
+      path: '/doctor/dashboard'
+      fullPath: '/doctor/dashboard'
+      preLoaderRoute: typeof AuthenticatedDoctorDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
-  AuthenticatedDoctorRoute: typeof AuthenticatedDoctorRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedDoctorDashboardRoute: typeof AuthenticatedDoctorDashboardRoute
+  AuthenticatedDoctorOnboardingRoute: typeof AuthenticatedDoctorOnboardingRoute
+  AuthenticatedDoctorPendingRoute: typeof AuthenticatedDoctorPendingRoute
+  AuthenticatedDoctorProfileRoute: typeof AuthenticatedDoctorProfileRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
-  AuthenticatedDoctorRoute: AuthenticatedDoctorRoute,
-  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedDoctorDashboardRoute: AuthenticatedDoctorDashboardRoute,
+  AuthenticatedDoctorOnboardingRoute: AuthenticatedDoctorOnboardingRoute,
+  AuthenticatedDoctorPendingRoute: AuthenticatedDoctorPendingRoute,
+  AuthenticatedDoctorProfileRoute: AuthenticatedDoctorProfileRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface DoctorsRouteChildren {
+  DoctorsIdRoute: typeof DoctorsIdRoute
+}
+
+const DoctorsRouteChildren: DoctorsRouteChildren = {
+  DoctorsIdRoute: DoctorsIdRoute,
+}
+
+const DoctorsRouteWithChildren =
+  DoctorsRoute._addFileChildren(DoctorsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  BookRoute: BookRoute,
-  QueueRoute: QueueRoute,
+  DoctorsRoute: DoctorsRouteWithChildren,
+  BookDoctorIdRoute: BookDoctorIdRoute,
   ConfirmationIdRoute: ConfirmationIdRoute,
+  QueueDoctorIdRoute: QueueDoctorIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
