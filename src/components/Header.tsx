@@ -4,7 +4,7 @@ import { Stethoscope, Languages, LogOut, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { CLINIC } from "@/lib/clinic";
+import { PLATFORM } from "@/lib/clinic";
 
 export function Header() {
   const { t, toggle, lang } = useI18n();
@@ -30,14 +30,14 @@ export function Header() {
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-card">
             <Stethoscope className="h-5 w-5" />
           </span>
-          <span className="truncate text-lg font-extrabold tracking-tight">{CLINIC.name}</span>
+          <span className="truncate text-lg font-extrabold tracking-tight">{PLATFORM.name}</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
           <Link to="/" className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground">{t("home")}</Link>
-          <Link to="/queue" className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground">{t("queueLive")}</Link>
+          <Link to="/doctors" className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground">{t("findDoctors")}</Link>
           {userId && (
-            <Link to="/admin" className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground">{t("admin")}</Link>
+            <Link to="/doctor/dashboard" className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground">{t("dashboard")}</Link>
           )}
         </nav>
 
@@ -45,16 +45,13 @@ export function Header() {
           <Button variant="ghost" size="sm" onClick={toggle} aria-label="Toggle language" className="gap-1.5">
             <Languages className="h-4 w-4" /> <span className="text-xs font-semibold">{lang === "en" ? "हिं" : "EN"}</span>
           </Button>
-          <Button variant="default" size="sm" asChild className="hidden sm:inline-flex">
-            <Link to="/book">{t("bookNow")}</Link>
-          </Button>
           {userId ? (
             <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
               <LogOut className="h-4 w-4" />
             </Button>
           ) : (
-            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
-              <Link to="/auth">Staff</Link>
+            <Button variant="default" size="sm" asChild className="hidden sm:inline-flex">
+              <Link to="/auth">{t("forDoctors")}</Link>
             </Button>
           )}
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(v => !v)} aria-label="Menu">
@@ -67,11 +64,10 @@ export function Header() {
         <div className="border-t bg-background md:hidden">
           <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
             <Link to="/" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary">{t("home")}</Link>
-            <Link to="/queue" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary">{t("queueLive")}</Link>
-            <Link to="/book" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium text-primary">{t("bookNow")}</Link>
+            <Link to="/doctors" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary">{t("findDoctors")}</Link>
             {userId
-              ? <Link to="/admin" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary">{t("admin")}</Link>
-              : <Link to="/auth" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary">Staff login</Link>}
+              ? <Link to="/doctor/dashboard" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary">{t("dashboard")}</Link>
+              : <Link to="/auth" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium text-primary">{t("forDoctors")}</Link>}
           </div>
         </div>
       )}
