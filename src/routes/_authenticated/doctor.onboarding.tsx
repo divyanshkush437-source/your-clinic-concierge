@@ -51,7 +51,7 @@ function OnboardingPage() {
   const [saving, setSaving] = useState(false);
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       doctor_name: "", specialization: "", qualification: "",
       experience_years: 0, clinic_name: "", clinic_address: "",
