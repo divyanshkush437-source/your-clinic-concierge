@@ -49,7 +49,17 @@ function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string>("pending");
 
-  const form = useForm<FormValues>({ resolver: zodResolver(schema) });
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema) as any,
+    defaultValues: {
+      doctor_name: "", specialization: "", qualification: "",
+      experience_years: 0, clinic_name: "", clinic_address: "",
+      city: "", state: "", consultation_fee: 0, phone: "", email: "",
+      profile_photo_url: "",
+      available_days: [],
+      time_start: "10:00", time_end: "14:00", slot_minutes: 15,
+    },
+  });
 
   useEffect(() => {
     (async () => {
