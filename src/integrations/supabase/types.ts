@@ -182,26 +182,32 @@ export type Database = {
         Row: {
           age: number
           created_at: string
+          email: string | null
           full_name: string
           gender: string
           id: string
           mobile: string
+          user_id: string | null
         }
         Insert: {
           age: number
           created_at?: string
+          email?: string | null
           full_name: string
           gender: string
           id?: string
           mobile: string
+          user_id?: string | null
         }
         Update: {
           age?: number
           created_at?: string
+          email?: string | null
           full_name?: string
           gender?: string
           id?: string
           mobile?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -332,6 +338,11 @@ export type Database = {
         Returns: number
       }
       bootstrap_admin_if_none: { Args: never; Returns: boolean }
+      cancel_my_appointment: {
+        Args: { _appointment_id: string }
+        Returns: undefined
+      }
+      claim_patient_records: { Args: { _phone: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
