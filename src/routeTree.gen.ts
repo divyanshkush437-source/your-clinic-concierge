@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as MyAppointmentsRouteImport } from './routes/my-appointments'
 import { Route as DoctorsRouteImport } from './routes/doctors'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -25,6 +26,11 @@ import { Route as AuthenticatedDoctorPendingRouteImport } from './routes/_authen
 import { Route as AuthenticatedDoctorOnboardingRouteImport } from './routes/_authenticated/doctor.onboarding'
 import { Route as AuthenticatedDoctorDashboardRouteImport } from './routes/_authenticated/doctor.dashboard'
 
+const MyAppointmentsRoute = MyAppointmentsRouteImport.update({
+  id: '/my-appointments',
+  path: '/my-appointments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DoctorsRoute = DoctorsRouteImport.update({
   id: '/doctors',
   path: '/doctors',
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/doctors': typeof DoctorsRouteWithChildren
+  '/my-appointments': typeof MyAppointmentsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/book/$doctorId': typeof BookDoctorIdRoute
   '/confirmation/$id': typeof ConfirmationIdRoute
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/doctors': typeof DoctorsRouteWithChildren
+  '/my-appointments': typeof MyAppointmentsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/book/$doctorId': typeof BookDoctorIdRoute
   '/confirmation/$id': typeof ConfirmationIdRoute
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/doctors': typeof DoctorsRouteWithChildren
+  '/my-appointments': typeof MyAppointmentsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/book/$doctorId': typeof BookDoctorIdRoute
   '/confirmation/$id': typeof ConfirmationIdRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/doctors'
+    | '/my-appointments'
     | '/admin'
     | '/book/$doctorId'
     | '/confirmation/$id'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/doctors'
+    | '/my-appointments'
     | '/admin'
     | '/book/$doctorId'
     | '/confirmation/$id'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/doctors'
+    | '/my-appointments'
     | '/_authenticated/admin'
     | '/book/$doctorId'
     | '/confirmation/$id'
@@ -212,6 +224,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   DoctorsRoute: typeof DoctorsRouteWithChildren
+  MyAppointmentsRoute: typeof MyAppointmentsRoute
   BookDoctorIdRoute: typeof BookDoctorIdRoute
   ConfirmationIdRoute: typeof ConfirmationIdRoute
   PatientAuthRoute: typeof PatientAuthRoute
@@ -220,6 +233,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/my-appointments': {
+      id: '/my-appointments'
+      path: '/my-appointments'
+      fullPath: '/my-appointments'
+      preLoaderRoute: typeof MyAppointmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/doctors': {
       id: '/doctors'
       path: '/doctors'
@@ -365,6 +385,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   DoctorsRoute: DoctorsRouteWithChildren,
+  MyAppointmentsRoute: MyAppointmentsRoute,
   BookDoctorIdRoute: BookDoctorIdRoute,
   ConfirmationIdRoute: ConfirmationIdRoute,
   PatientAuthRoute: PatientAuthRoute,
