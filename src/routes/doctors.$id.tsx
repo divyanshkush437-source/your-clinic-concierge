@@ -64,7 +64,14 @@ function DoctorProfile() {
               <InfoRow icon={Clock}        title={t("availableTimings")} value={`${doc.time_start} – ${doc.time_end} • ${daysLabel || "—"}`} />
               <InfoRow icon={GraduationCap} title={t("experience")} value={`${doc.experience_years} years`} />
               {doc.phone && <InfoRow icon={Phone} title="Phone" value={doc.phone} />}
+              {typeof doc.latitude === "number" && typeof doc.longitude === "number" && (
+                <div className="pt-2">
+                  <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Clinic location</div>
+                  <ClinicLocationMap lat={doc.latitude} lng={doc.longitude} label={doc.clinic_name} />
+                </div>
+              )}
             </div>
+
 
             <Card className="h-fit p-5 shadow-card">
               <div className="flex items-center justify-between">
