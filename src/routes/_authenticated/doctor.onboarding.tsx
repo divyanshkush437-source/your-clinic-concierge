@@ -141,6 +141,26 @@ function OnboardingPage() {
               </div>
 
               <div className="h-px bg-border" />
+              <FormField control={form.control} name="latitude" render={() => (
+                <FormItem>
+                  <FormLabel>Clinic location on map</FormLabel>
+                  <ClinicLocationPicker
+                    value={
+                      form.watch("latitude") != null && form.watch("longitude") != null
+                        ? { lat: form.watch("latitude") as number, lng: form.watch("longitude") as number }
+                        : null
+                    }
+                    onChange={({ lat, lng }) => {
+                      form.setValue("latitude", lat, { shouldDirty: true, shouldValidate: true });
+                      form.setValue("longitude", lng, { shouldDirty: true, shouldValidate: true });
+                    }}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+
+              <div className="h-px bg-border" />
               <FormField control={form.control} name="available_days" render={() => (
                 <FormItem>
                   <FormLabel>Available days</FormLabel>
