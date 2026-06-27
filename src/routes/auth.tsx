@@ -58,7 +58,7 @@ function AuthPage() {
       });
       if (error) throw error;
       toast.success("Account created — complete your doctor profile.");
-      navigate({ to: "/doctor/onboarding" });
+      navigate({ to: "/doctor/dashboard" });
     } catch (err: any) {
       toast.error(err?.message ?? "Sign up failed");
     } finally {
