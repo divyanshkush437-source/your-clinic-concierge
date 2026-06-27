@@ -62,6 +62,7 @@ function OnboardingPage() {
       profile_photo_url: "",
       available_days: ["mon", "tue", "wed", "thu", "fri", "sat"],
       time_start: "10:00", time_end: "14:00", slot_minutes: 15,
+      latitude: null, longitude: null,
     },
   });
 
