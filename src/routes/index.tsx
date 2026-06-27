@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,22 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PLATFORM, SPECIALIZATIONS } from "@/lib/clinic";
 import { useI18n } from "@/lib/i18n";
-import { Search, Stethoscope, Calendar, ShieldCheck, Activity } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Search, Stethoscope, Calendar, ShieldCheck, Activity, IndianRupee, MapPin, Navigation } from "lucide-react";
+
+type FeaturedDoctor = {
+  id: string;
+  doctor_name: string;
+  specialization: string;
+  clinic_name: string;
+  clinic_address: string;
+  city: string;
+  consultation_fee: number;
+  experience_years: number;
+  profile_photo_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
