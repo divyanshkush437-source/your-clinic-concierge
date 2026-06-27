@@ -40,6 +40,19 @@ function Home() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const [featured, setFeatured] = useState<FeaturedDoctor[] | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("doctors")
+        .select("id, doctor_name, specialization, clinic_name, clinic_address, city, consultation_fee, experience_years, profile_photo_url, latitude, longitude")
+        .eq("verification_status", "approved")
+        .order("created_at", { ascending: false })
+        .limit(6);
+      setFeatured((data ?? []) as FeaturedDoctor[]);
+    })();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
