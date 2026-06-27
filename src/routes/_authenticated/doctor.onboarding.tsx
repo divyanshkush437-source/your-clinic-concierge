@@ -40,6 +40,8 @@ const schema = z.object({
   time_start: z.string().regex(/^\d{2}:\d{2}$/),
   time_end: z.string().regex(/^\d{2}:\d{2}$/),
   slot_minutes: z.coerce.number().int().min(5).max(120),
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+  longitude: z.number().min(-180).max(180).nullable().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
