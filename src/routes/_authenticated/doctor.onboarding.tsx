@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { SPECIALIZATIONS, DAYS } from "@/lib/clinic";
 import { upsertDoctorProfile, getMyDoctor } from "@/lib/doctor.functions";
+import { ClinicLocationPicker } from "@/components/ClinicLocationPicker";
 import { Stethoscope, Save } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/doctor/onboarding")({
@@ -39,6 +40,8 @@ const schema = z.object({
   time_start: z.string().regex(/^\d{2}:\d{2}$/),
   time_end: z.string().regex(/^\d{2}:\d{2}$/),
   slot_minutes: z.coerce.number().int().min(5).max(120),
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+  longitude: z.number().min(-180).max(180).nullable().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -59,6 +62,7 @@ function OnboardingPage() {
       profile_photo_url: "",
       available_days: ["mon", "tue", "wed", "thu", "fri", "sat"],
       time_start: "10:00", time_end: "14:00", slot_minutes: 15,
+      latitude: null, longitude: null,
     },
   });
 
@@ -135,6 +139,26 @@ function OnboardingPage() {
                 <Field name="state" label="State" form={form} />
                 <Field name="profile_photo_url" label="Profile photo URL (optional)" form={form} className="sm:col-span-2" placeholder="https://…" />
               </div>
+
+              <div className="h-px bg-border" />
+              <FormField control={form.control} name="latitude" render={() => (
+                <FormItem>
+                  <FormLabel>Clinic location on map</FormLabel>
+                  <ClinicLocationPicker
+                    value={
+                      form.watch("latitude") != null && form.watch("longitude") != null
+                        ? { lat: form.watch("latitude") as number, lng: form.watch("longitude") as number }
+                        : null
+                    }
+                    onChange={({ lat, lng }) => {
+                      form.setValue("latitude", lat, { shouldDirty: true, shouldValidate: true });
+                      form.setValue("longitude", lng, { shouldDirty: true, shouldValidate: true });
+                    }}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )} />
+
 
               <div className="h-px bg-border" />
               <FormField control={form.control} name="available_days" render={() => (

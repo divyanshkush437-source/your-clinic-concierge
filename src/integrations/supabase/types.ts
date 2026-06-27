@@ -118,6 +118,8 @@ export type Database = {
           email: string
           experience_years: number
           id: string
+          latitude: number | null
+          longitude: number | null
           phone: string
           profile_photo_url: string
           qualification: string
@@ -141,6 +143,8 @@ export type Database = {
           email?: string
           experience_years?: number
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           phone?: string
           profile_photo_url?: string
           qualification?: string
@@ -164,6 +168,8 @@ export type Database = {
           email?: string
           experience_years?: number
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           phone?: string
           profile_photo_url?: string
           qualification?: string
