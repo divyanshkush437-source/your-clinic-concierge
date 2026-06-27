@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { SPECIALIZATIONS, DAYS } from "@/lib/clinic";
 import { upsertDoctorProfile, getMyDoctor } from "@/lib/doctor.functions";
+import { ClinicLocationPicker } from "@/components/ClinicLocationPicker";
 import { Stethoscope, Save } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/doctor/onboarding")({
