@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { DAYS } from "@/lib/clinic";
+import { ClinicLocationMap } from "@/components/ClinicLocationPicker";
 import { Stethoscope, MapPin, IndianRupee, Clock, GraduationCap, Briefcase, Star, Phone } from "lucide-react";
 
 export const Route = createFileRoute("/doctors/$id")({
