@@ -105,7 +105,58 @@ function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 pb-14">
+      <section className="mx-auto max-w-6xl px-4 pb-4">
+        <div className="flex items-end justify-between">
+          <h2 className="text-2xl font-extrabold md:text-3xl">Doctors near you</h2>
+          <Link to="/doctors" className="text-sm font-semibold text-primary hover:underline">View all →</Link>
+        </div>
+        {featured === null ? (
+          <p className="mt-6 text-sm text-muted-foreground">Loading doctors…</p>
+        ) : featured.length === 0 ? (
+          <Card className="mt-6 p-8 text-center text-sm text-muted-foreground shadow-card">No doctors available.</Card>
+        ) : (
+          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {featured.map((d) => {
+              const mapsHref = d.latitude && d.longitude
+                ? `https://www.google.com/maps/dir/?api=1&destination=${d.latitude},${d.longitude}`
+                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${d.clinic_name} ${d.clinic_address} ${d.city}`)}`;
+              return (
+                <Card key={d.id} className="flex flex-col gap-3 p-5 shadow-card transition hover:shadow-elevated">
+                  <div className="flex gap-3">
+                    <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-primary text-primary-foreground">
+                      {d.profile_photo_url
+                        ? <img src={d.profile_photo_url} alt="" className="h-full w-full object-cover" />
+                        : <Stethoscope className="h-6 w-6" />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-base font-extrabold">{d.doctor_name}</div>
+                      <div className="truncate text-xs text-primary">{d.specialization}</div>
+                      <div className="mt-0.5 truncate text-xs text-muted-foreground">{d.experience_years} yrs exp</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                    <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span className="line-clamp-2">{d.clinic_name}, {d.city}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center text-sm font-bold text-primary">
+                      <IndianRupee className="h-4 w-4" />{d.consultation_fee}
+                    </span>
+                    <a href={mapsHref} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+                      <Navigation className="h-3.5 w-3.5" /> Directions
+                    </a>
+                  </div>
+                  <Button size="sm" asChild className="mt-auto">
+                    <Link to="/book/$doctorId" params={{ doctorId: d.id }}>Book Appointment</Link>
+                  </Button>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-14">
         <h2 className="text-center text-2xl font-extrabold md:text-3xl">How it works</h2>
         <div className="mt-10 grid gap-4 md:grid-cols-3">
           {[
